@@ -2,6 +2,7 @@
 # [1.1] Funcao do credenciamento
 function Credenciamento {
     param (
+        [ref]$op,
         [ref]$serverAddress,
         [ref]$useDialog,
         [ref]$useWindowsCredentials,
@@ -11,40 +12,41 @@ function Credenciamento {
     )
 
     try {
-        $stringconnection = Read-Host "Informe o endereco do servidor"
-        $uriValue = $serverAddress.Value
-        if ($uriValue -eq $null) {
-            $serverAddress.Value = [System.Uri]::new($stringconnection)
-        }
-        else{
-            Write-Host "Erro"
-        }
+        
         while ($true) {
-            $op = Read-Host "Escolha qual das opcoes deseja habilitar?`n[1] Dialogo de login`n[2] Credenciais do Windows `n[3] Usuario basico Milestone (Recomendado) "
-            if ($op -eq '1') {
+            $op.Value = Read-Host "Escolha qual das opcoes deseja habilitar?`n[1] Dialogo de login`n[2] Credenciais do Windows `n[3] Usuario basico Milestone (Recomendado) "
+            if ($op.Value -eq '1') {
                 $useDialog.Value = $true
                 $useWindowsCredentials.value = $false
                 $useBasicUser.value = $false
                 break
             }
-            elseif ($op -eq '2') {
+            elseif ($op.Value -eq '2') {
                 $useDialog.Value = $false
                 $useWindowsCredentials.Value = $true
                 $useBasicUser.value = $false                
                 break
             }
-            elseif ($op -eq '3') {
+            elseif ($op.Value -eq '3') {
                 $useDialog.Value = $false
                 $useWindowsCredentials.Value = $false
-                $useBasicUser.value = $true                
+                $useBasicUser.value = $true 
+                $stringconnection = Read-Host "Informe o endereco do servidor"
+                $uriValue = $serverAddress.Value
+                $username.Value = Read-Host "Informe o seu nome de usuario"
+                $password.Value = Read-Host "Informe a senha" 
+                if ($null -eq $uriValue.Value) {
+                    $serverAddress.Value = [System.Uri]::new($stringconnection)
+                }
+                else{
+                    Write-Host "Erro"
+                }              
                 break
             }
             else {
                 Write-Host "Opcao invalida"
             }
         }
-        $username.Value = Read-Host "Informe o seu nome de usuario"
-        $password.Value = Read-Host "Informe a senha"
     }
     catch {
         Write-Host "Erro no credenciamento: $_"
@@ -62,42 +64,50 @@ function Modulo_Milestone {
         [ref]$password,
         [ref]$username
     )
-
+    $teste = $null
     try {
         Write-Host "Tentando conectar"
         if ($useDialog.Value) {
-            Write-Host "Autenticando e conectando usando dialogo de login..."
-            Connect-ManagementServer -AcceptEula -Force
-        }
-        else {
-            $credential = $null
-            if ($useWindowsCredentials.Value) {
-                Write-Host "Autenticando e conectando usando credenciais do Windows..."
-                $credential = Get-Credential
-            }
-            elseif ($useBasicUser.Value) {
-                Write-Host "Autenticando e conectando usando usuario basico Milestone..."
-                $credential = New-Object -TypeName PSCredential -ArgumentList ($username.Value, (ConvertTo-SecureString $password.Value -AsPlainText -Force))
-            }
+            $server.Value = "http://localhost/"
             $serverAddressUri = [System.Uri]::new($server.Value)
-            Write-Host $serverAddressUri
+            Write-Host "Autenticando e conectando usando dialogo de login..."
+            $serverAddressUri = [System.Uri]::new($server.Value)
             Connect-ManagementServer -ServerAddress $serverAddressUri -Credential $credential -BasicUser:$useBasicUser.Value -Force -AcceptEula
 
+            $teste = $true
+        }
+        elseif ($useWindowsCredentials.Value){
+            Write-Host "Autenticando e conectando usando credenciais do Windows..."
+            
+            # Solicita as credenciais do Windows ao usuÃ¡rio
+            $credential = [System.Management.Automation.PSCredential]::Empty
+            $server.Value = "http://localhost/"
+            $serverAddressUri = [System.Uri]::new($server.Value)
+            # Conecta ao servidor usando as credenciais do Windows
+            Connect-ManagementServer -ServerAddress $serverAddressUri -Credential $credential.Value -Force -AcceptEula
+
+            $teste = $true
+        }
+        elseif ($useBasicUser.Value) {
+            $credential = $null
+            Write-Host "Autenticando e conectando usando usuario basico Milestone..."
+            $serverAddressUri = [System.Uri]::new($server.Value)
+            Connect-ManagementServer -ServerAddress $serverAddressUri -Credential $credential -BasicUser:$useBasicUser.Value -Force -AcceptEula
+            $teste = $true
+        }
+        else{
+            Write-Host "Erro"
         }
     }
     catch {
         Write-Host "Erro no Modulo_Milestone: $_"
         Write-Host $errorInfo
         Add-Content -Path "log.txt" -Value $errorInfo
-        try {
-            Connect-ManagementServer -ServerAddress $serverAddressUri -Credential $credential -BasicUser:$useBasicUser.Value -Force -AcceptEula
-
-        }
-        catch {
-            $teste = $false
-        }
+        $teste = $false
+        
     }
     finally {
+        Connect-Vms -ServerAddress $server.Value -Credential $credential.Value 
         if ($teste) {
             Write-Host "Conexao realizada com sucesso"
         }
@@ -163,7 +173,7 @@ function Save-ExcelReport {
     }
 }
 # [2.0] Main
-$serverAddress = $null
+$serverAddress = ""
 $useDlg = $null
 $useWinCred = $null
 $useBasic = $null
@@ -172,7 +182,8 @@ $password = $null
 $reportPath= "C:\milestone\reports"
 $path = $null
 $cameraData = $null
-Credenciamento -serverAddress ([ref]$serverAddress) -useDialog ([ref]$useDlg) -useWindowsCredentials ([ref]$useWinCred) -useBasicUser ([ref]$useBasic) -username ([ref]$username) -password ([ref]$password)
+$op = $null
+Credenciamento -op ([ref]$op) -serverAddress ([ref]$serverAddress) -useDialog ([ref]$useDlg) -useWindowsCredentials ([ref]$useWinCred) -useBasicUser ([ref]$useBasic) -username ([ref]$username) -password ([ref]$password)
 
 $reportFileName = Read-Host "Informe o nome do arquivo do relatorio (ex: CustomReport.xlsx)" 
 
