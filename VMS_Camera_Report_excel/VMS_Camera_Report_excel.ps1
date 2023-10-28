@@ -14,7 +14,7 @@ function Credenciamento {
     try {
         
         while ($true) {
-            $op.Value = Read-Host "Escolha qual das opcoes deseja habilitar?`n[1] Dialogo de login`n[2] Credenciais do Windows `n[3] Usuario basico Milestone (Recomendado) "
+            $op.Value = Read-Host "Escolha qual das opcoes deseja habilitar?`n[1] Dialogo de login`n[2] Credenciais do Windows `n[3] Usuario basico Milestone"
             if ($op.Value -eq '1') {
                 $useDialog.Value = $true
                 $useWindowsCredentials.value = $false
@@ -31,22 +31,39 @@ function Credenciamento {
                 $useDialog.Value = $false
                 $useWindowsCredentials.Value = $false
                 $useBasicUser.value = $true 
-                $stringconnection = Read-Host "Informe o endereco do servidor"
-                $uriValue = $serverAddress.Value
-                $username.Value = Read-Host "Informe o seu nome de usuario"
-                $password.Value = Read-Host "Informe a senha" 
-                if ($null -eq $uriValue.Value) {
-                    $serverAddress.Value = [System.Uri]::new($stringconnection)
+                while($true){
+                    $stringconnection = Read-Host "Informe o endereco do servidor"
+                    try{
+                        if ([System.Uri]::IsWellFormedUriString($stringconnection, [System.UriKind]::Absolute)) {
+                            Write-Host "O endereco do servidor e uma URI valida."
+                            $serverAddress.Value = [System.Uri]::new($stringconnection)
+                            $pingResult = Test-Connection -ComputerName $serverAddress.Value.Host -Count 1 -Quiet
+                            if ($pingResult) {
+                                Write-Host "O servidor e valido e acessÃ­vel."
+                                break
+                            }
+                            else{
+                                Write-Host "O servidor nao esta acessivel."
+                                Write-Host "Tente novamente."
+                            }
+        
+                        } else {
+                            Write-Host "O endereco do servidor nÃ£o Ã© uma URI vÃ¡lida. Por favor, forneÃ§a um endereÃ§o vÃ¡lido."
+                        }
+                    }catch{
+                        Write-Host "Erro no servidor"
+                    }
+                    
                 }
-                else{
-                    Write-Host "Erro"
-                }              
+                $username.Value = Read-Host "Informe o seu nome de usuario"
+                $password.Value = Read-Host "Informe a senha"            
                 break
             }
             else {
                 Write-Host "Opcao invalida"
-            }
+            }   
         }
+            
     }
     catch {
         Write-Host "Erro no credenciamento: $_"
@@ -71,7 +88,6 @@ function Modulo_Milestone {
             $server.Value = "http://localhost/"
             $serverAddressUri = [System.Uri]::new($server.Value)
             Write-Host "Autenticando e conectando usando dialogo de login..."
-            $serverAddressUri = [System.Uri]::new($server.Value)
             Connect-ManagementServer -ServerAddress $serverAddressUri -Credential $credential -BasicUser:$useBasicUser.Value -Force -AcceptEula
 
             $teste = $true
@@ -79,7 +95,7 @@ function Modulo_Milestone {
         elseif ($useWindowsCredentials.Value){
             Write-Host "Autenticando e conectando usando credenciais do Windows..."
             
-            # Solicita as credenciais do Windows ao usuÃ¡rio
+            # Solicita as credenciais do Windows ao usuÃƒÂ¡rio
             $credential = [System.Management.Automation.PSCredential]::Empty
             $server.Value = "http://localhost/"
             $serverAddressUri = [System.Uri]::new($server.Value)
