@@ -71,7 +71,7 @@ function Credenciamento {
         Add-Content -Path "log.txt" -Value $errorInfo
     }
 }
-# [1.3] Configuracao do servidor MILESTONE
+# [1.2] Configuracao do servidor MILESTONE
 function Modulo_Milestone {
     param (
         [ref]$useDialog,
@@ -132,7 +132,7 @@ function Modulo_Milestone {
         }
     }
 }
-# [1.4] Criacao de pasta de relatorios
+# [1.3] Criacao de pasta de relatorios
 function Create_ReportFolder {
     param (
         [ref]$reportPath,
@@ -152,16 +152,16 @@ function Create_ReportFolder {
         Add-Content -Path "log.txt" -Value $errorInfo
     }
 }
-# [1.5] Verificar se o arquivo existe
+# [1.4] Verificar se o arquivo existe
 function Test-FileExists($path) {
     return Test-Path -Path $path -PathType Leaf
 }
-# [1.6] Obtendo os dados de todas as camaras
+# [1.5] Obtendo os dados de todas as camaras
 function Get-CameraData {
     $cameraReportData = Get-VmsCameraReport -IncludePlainTextPasswords -IncludeRecordingStats -IncludeRetentionInfo -IncludeSnapshots
     return $cameraReportData
 }
-# [1.7] Salvar relatorio em Excel
+# [1.6] Salvar relatorio em Excel
 
 function Save-ExcelReport {
     param(
