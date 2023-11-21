@@ -1,4 +1,3 @@
-Aqui está o código corrigido, levando em consideração as sugestões mencionadas:
 # [1.0] Funcoes
 # [1.1] Funcao do credenciamento
 function Credenciamento {
