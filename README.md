@@ -5,7 +5,7 @@ Este projeto consiste em um conjunto de scripts PowerShell desenvolvidos para au
 
 ## Instruções de Uso
 1. Clone este repositório em seu ambiente local.
-2. Execute o script `MainScript.ps1` para realizar as operações desejadas.
+2. Escolha o script para realizar as operações desejadas.
 3. Siga as instruções apresentadas durante a execução para configurar credenciais, escolher opções e realizar o agrupamento de dispositivos.
 
 ## Requisitos
