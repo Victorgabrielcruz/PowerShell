@@ -1,4 +1,3 @@
-Aqui está o código corrigido, levando em consideração as sugestões mencionadas:
 # [1.0] Funcoes
 # [1.1] Funcao do credenciamento
 function Credenciamento {
@@ -187,6 +186,7 @@ $config = @{
     ConnectionAttemptInterval = 10
 }
 Credenciamento -op ([ref]$op) -serverAddress ([ref]$serverAddress) -useDialog ([ref]$useDlg) -useWindowsCredentials ([ref]$useWinCred) -useBasicUser ([ref]$useBasic) -username ([ref]$username) -password ([ref]$password)
+Modulo_Milestone -useDialog ([ref]$useDlg) -useWindowsCredentials ([ref]$useWinCred) -server ([ref]$serverAddress) -useBasicUser ([ref]$useBasic) -password ([ref]$password) -username ([ref]$username)
 $allHardware = Get-VmsHardware | Where-Object { $_.Enabled -eq $true }
 $allHardware = $allHardware | Sort-Object -Property Address | Get-Unique -AsString
 try {
